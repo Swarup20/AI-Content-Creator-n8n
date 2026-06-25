@@ -1,0 +1,432 @@
+{
+  "name": "AI Content Creator",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "79af3da4-dd7e-46ca-9c99-c3adb95aeb71",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10gNS-_Lec2EpphZOQ0g4kosytB7_ep8qtEl30C4XAGg",
+          "mode": "list",
+          "cachedResultName": "AI_Content_Topics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10gNS-_Lec2EpphZOQ0g4kosytB7_ep8qtEl30C4XAGg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10gNS-_Lec2EpphZOQ0g4kosytB7_ep8qtEl30C4XAGg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        -96
+      ],
+      "id": "5022f749-9597-488f-b845-5c1f41b828f1",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VCJ6uOw9moEpAvPW",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type ",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n \"api_key\": \"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\",\n \"query\": \"{{$json.Topic}} latest trends and insights\",\n \"search_depth\": \"basic\",\n \"max_results\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        64
+      ],
+      "id": "5ca73f24-887f-4cad-aeec-21c8b3d7cd44",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "17901d47-1ad9-4ae4-b1dd-ae00321b54e6",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "let combinedText = items.map(item => item.json.content).join(\"\\n\\n\");\n\nreturn [\n  {\n    json: {\n      content: combinedText\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "ef7f5c9a-bd36-4c9b-b4c2-963c2fe64276",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "10gNS-_Lec2EpphZOQ0g4kosytB7_ep8qtEl30C4XAGg",
+          "mode": "list",
+          "cachedResultName": "AI_Content_Topics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10gNS-_Lec2EpphZOQ0g4kosytB7_ep8qtEl30C4XAGg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10gNS-_Lec2EpphZOQ0g4kosytB7_ep8qtEl30C4XAGg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 2,
+            "Status": "completed",
+            "Linkedin_post": "={{ $('Message a model').item.json.content.parts[0].text }}",
+            "X_post": "={{ $('Gemini X').item.json.content.parts[0].text }}",
+            "Blog_summary": "={{ $json.content.parts[0].text }}",
+            "Published_data": "={{new Date().toISOString()}}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Linkedin_post",
+              "displayName": "Linkedin_post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "X_post",
+              "displayName": "X_post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Blog_summary",
+              "displayName": "Blog_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Published_data",
+              "displayName": "Published_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1952,
+        176
+      ],
+      "id": "a518f822-248c-465e-9c0c-02b295999567",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VCJ6uOw9moEpAvPW",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Write a professional LinkedIn post (120-150 words) using:\n{{$json.content}}\nInclude 3 hashtags."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        64
+      ],
+      "id": "e4b468ed-1faf-4088-98ce-550e590ec27f",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BA8lUxgr4OVy5r8u",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Write a tweet under 280 characters using:\n{{$json.content}}\nInclude 2 hashtags."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "d9dc91c8-b170-4973-8fc6-3dd2587aada2",
+      "name": "Gemini X",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BA8lUxgr4OVy5r8u",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Write a 150-200 word blog summary using:\n{{$json.content}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1648,
+        64
+      ],
+      "id": "35b42dd3-f9e5-49f3-90c3-fede9b145ec5",
+      "name": "Gemini Blog",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BA8lUxgr4OVy5r8u",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Gemini X",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini X": {
+      "main": [
+        [
+          {
+            "node": "Gemini Blog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Blog": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7f464ef2-4022-41a2-8e9a-7fcb16c86bbe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1e248f50efc317b4852c712f4c994ecb2329e14c60c4e767f0bbb41259ea131b"
+  },
+  "id": "CeQB3mGk8anv0WPr",
+  "tags": []
+}
