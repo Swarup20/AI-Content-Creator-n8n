@@ -151,7 +151,7 @@ AI agents are rapidly becoming a core component of modern enterprises. They help
 
 ## 📸 Workflow Screenshot
 
-[Workflow](./workflow%20screenshot.png)
+![Workflow png](./workflow%20screenshot.png)
 
 ---
 
